@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
 
-
 mpl.rcParams.update(mpl.rcParamsDefault)
 e = ['#ffffff',
      '#009FD7',
@@ -17,6 +16,7 @@ e = ['#ffffff',
      '#fed630',
      '#75D0F4',
      '#EBA289']
+
 
 cmap = col.LinearSegmentedColormap.from_list('', [col.hex2color(color) for color in e], N=len(e))
 
@@ -31,14 +31,14 @@ class Schelling:
         self.prob = [self.empty_ratio] + [(1 - self.empty_ratio)/(self.races) for i in range(self.races)]
 
         self.map = np.random.choice(self.races+1,
-                                     size=(self.N+1)**2,
+                                     size=(self.N+2)**2,
                                      replace=True,
                                      p=self.prob,
-                                     ).reshape(self.N+1, self.N+1)
+                                     ).reshape(self.N+2, self.N+2)
         self.empty_houses = np.argwhere(self.map==0)
         self.houses_by_race = {i: np.argwhere(self.map==i) for i in np.arange(1, self.races+1)}
         self.households = {tuple(k) : self.map[k[0], k[1]] for k in np.argwhere(self.map>0)}
-        self.satisfied = np.array([self.is_satisfied(tuple(x)) for x in np.argwhere(self.map>-1)]).reshape(self.N+1, self.N+1)
+        self.satisfied = np.array([self.is_satisfied(tuple(x)) for x in np.argwhere(self.map>-1)]).reshape(self.N+2, self.N+2)
 
 
     def is_satisfied(self, x):
@@ -50,7 +50,7 @@ class Schelling:
         ## assume the border is satisfied -
         ## this is just a simplification for the next part
         #####
-        elif x[0] in [0, self.N] or x[1] in [0, self.N]:
+        elif x[0] in [0, self.N+1] or x[1] in [0, self.N+1]:
             satisfied = True
 
         ######
@@ -69,6 +69,7 @@ class Schelling:
                 satisfied = False
 
         return satisfied
+
 
     def update(self):
         unsatisfied = np.argwhere(self.satisfied==False)
@@ -90,14 +91,14 @@ class Schelling:
 
         self.households = {tuple(k) : self.map[k[0], k[1]] for k in np.argwhere(self.map>0)}
 
-        self.satisfied = np.array([self.is_satisfied(tuple(x)) for x in np.argwhere(self.map>-1)]).reshape(self.N+1, self.N+1)
+        self.satisfied = np.array([self.is_satisfied(tuple(x)) for x in np.argwhere(self.map>-1)]).reshape(self.N+2, self.N+2)
 
         if len(np.argwhere(self.satisfied==False)) == 0:
             print("Simulation stable")
 
 
 if __name__ == "__main__":
-    N = 66
+    N = 200
     races = 2
     empty_ratio = .2
     similarity_threshold = 6/8
@@ -113,13 +114,13 @@ if __name__ == "__main__":
 
 
     animate = []
-    animate.append([plt.imshow(schelling.map[1:schelling.N, 1:schelling.N], cmap=cmap)])
+    animate.append([plt.imshow(schelling.map[1:schelling.N+1, 1:schelling.N+1], cmap=cmap)])
 
 
-    for i in range(200):
-        if i % 2 == 0:
+    for i in range(211):
+        if i % 3 == 0:
             schelling.update()
-            animate.append([plt.imshow(schelling.map[1:schelling.N, 1:schelling.N], cmap=cmap)])
+            animate.append([plt.imshow(schelling.map[1:schelling.N+1, 1:schelling.N+1], cmap=cmap)])
 
     anim = animation.ArtistAnimation(fig, animate, interval=500, repeat_delay=500,
                                        blit=True)
